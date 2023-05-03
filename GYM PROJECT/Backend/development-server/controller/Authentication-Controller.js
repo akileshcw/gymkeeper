@@ -101,103 +101,99 @@ async function dashboardHome(req, res) {
   // toDate: { [Op.gte]: today }, // To date should be greater than or equal to today's date
 
   try {
-
-    if (u.length > 0) {
-      const members = await Members.count(
-        {
-          where: {
-            org_name: u[0].org_name
-          }
-        }
-      );
-
-      const active_members = await Membership.count(
-        {
-          distinct: true,
-          col: 'uuid', 
-          include: [
-            {
-              model: Members,
-              where: {
-                org_name: u[0].org_name,
-              },
-              as: 'memb',
+    const members = await Members.count({
+      where: {
+        org_name: u[0].org_name,
+      },
+    });
+    const active_members = await Membership.count(
+      {
+        distinct: true,
+        col: "uuid",
+        include: [
+          {
+            model: Members,
+            where: {
+              org_name: u[0].org_name,
             },
-          ],
-        },
-        {
-          where: { 
-            status: "Active", 
-            is_delete: false 
+            as: "memb",
           },
-        });
-
-
-      const expired_members = await Membership.count(
-        {
-          distinct: true,
-          col: 'uuid', 
-          include: [
-            {
-              model: Members,
-              where: {
-                org_name: u[0].org_name,
-              },
-              as: 'memb',
-            },
-          ],
+        ],
+      },
+      {
+        where: {
+          status: "Active",
+          is_delete: false,
         },
-        {
-          where: { status: "Expired", is_delete: false },
-        }
-      );
+      }
+    );
 
-      const todate = await Membership.findAll(
-        {
-          distinct: true,
-          col: 'uuid', 
-          include: [
-            {
-              model: Members,
-              where: {
-                org_name: u[0].org_name,
-              },
-              as: 'memb',
+    const expired_members = await Membership.count(
+      {
+        distinct: true,
+        col: "uuid",
+        include: [
+          {
+            model: Members,
+            where: {
+              org_name: u[0].org_name,
             },
-          ],
+            as: "memb",
+          },
+        ],
+      },
+      {
+        where: {
+          status: "Expired",
+          is_delete: false,
         },
-        {
+      }
+    );
+
+    const todate = await Membership.findAll(
+      {
+        distinct: true,
+        col: "uuid",
+        include: [
+          {
+            model: Members,
+            where: {
+              org_name: u[0].org_name,
+            },
+            as: "memb",
+          },
+        ],
+      },
+      {
         attributes: ["todate"],
         raw: true,
         where: { is_delete: false },
-      });
+      }
+    );
 
-      let exp_soon = 0;
+    let exp_soon = 0;
 
-      for (let i = 0; i < todate.length; i++) {
-        let dates = [];
-        let start_date = new Date(todate[i].todate);
-        let end_date = new Date(todate[i].todate);
-        start_date.setDate(start_date.getDate() - 5);
-        while (start_date < end_date) {
-          dates.push(new Date(start_date).toUTCString().slice(0, 16));
-          start_date.setDate(start_date.getDate() + 1);
-        }
-
-        if (dates.includes(new Date().toUTCString().slice(0, 16))) {
-          ++exp_soon;
-        }
+    for (let i = 0; i < todate.length; i++) {
+      let dates = [];
+      let start_date = new Date(todate[i].todate);
+      let end_date = new Date(todate[i].todate);
+      start_date.setDate(start_date.getDate() - 5);
+      while (start_date < end_date) {
+        dates.push(new Date(start_date).toUTCString().slice(0, 16));
+        start_date.setDate(start_date.getDate() + 1);
       }
 
-      return res.status(200).send({
-        members: members,
-        active: active_members,
-        expired: expired_members,
-        "expired soon": exp_soon,
-      });
-    } else {
-      return res.status(401).send({ error: "Unauthorized" });
+      if (dates.includes(new Date().toUTCString().slice(0, 16))) {
+        ++exp_soon;
+      }
     }
+
+    return res.status(200).send({
+      members: members,
+      active: active_members,
+      expired: expired_members,
+      "expired soon": exp_soon,
+    });
   } catch (e) {
     console.log(e);
   }
@@ -381,7 +377,7 @@ async function logout(req, res) {
 const token_verify = async (req, res) => {
   let token = req.headers.authorization;
 
-  console.log("Token nnn", token)
+  console.log("Token nnn", token);
 
   try {
     token = token.split(" ");

@@ -23,7 +23,7 @@ async function getMember(req, res) {
         is_delete: false,
       },
     });
-    return res.status(200).send({ membership: mshp, user: u });
+    return res.status(200).send({ membership: mshp });
   } catch (e) {
     console.log(e);
   }
@@ -34,7 +34,7 @@ async function addMembership(req, res) {
   const mbrshp = req.body;
   const uuid = req.params.uuid;
   console.log(mbrshp, uuid);
-  console.log("Memberet",req.headers.authorization)
+  console.log("Memberet", req.headers.authorization);
   try {
     const seconds = await Membership.findAll({ raw: true });
 
@@ -182,15 +182,15 @@ Stay Fit✌️ Stay Strong💪`,
 async function getMembershipsForEdit(req, res) {
   const id = req.params.id,
     uuid = req.params.uuid;
-
+  console.log("uuid,id", uuid, id);
   try {
     const mshp = await Membership.findAll({
       where: {
         id: id,
-        member: uuid,
+        uuid: uuid,
       },
     });
-    return res.status(200).send({ membership: mshp, user: u });
+    return res.status(200).send({ membership: mshp });
   } catch (e) {
     console.log(e);
   }
@@ -216,10 +216,9 @@ async function editMembership(req, res) {
         mop: mbshp.mop,
         updatedAt: new Date(),
       },
-      { where: { id: id, member: uuid } }
+      { where: { id: id, uuid: uuid } }
     );
-    console.log(mshp);
-    return res.status(200).send({ membership: mshp, user: u });
+    return res.status(200).send({ membership: mshp });
   } catch (e) {
     console.log(e);
   }
@@ -243,7 +242,7 @@ async function getMemberships(req, res) {
         attributes: ["name", "phonenumber", "client_id"],
         as: "memb",
       },
-      where: { status: 'Active', is_delete: false },
+      where: { status: "Active", is_delete: false },
     });
 
     const expired = await Membership.findAll({
@@ -255,26 +254,24 @@ async function getMemberships(req, res) {
       },
       where: { status: "Expired", is_delete: false },
     });
-
+    console.log(expired);
     const me = await Membership.findAll({
-      attributes: [
-        [sequelize.fn("DISTINCT", sequelize.col("member")), "member"],
-      ],
+      attributes: [[sequelize.fn("DISTINCT", sequelize.col("uuid")), "uuid"]],
       raw: true,
     });
     let m = [];
     me.map((e) => {
-      m.push(e.member);
+      m.push(e.uuid);
     });
-
     const pending = await Members.findAll({
       where: { uuid: { [Op.notIn]: m } },
       raw: true,
     });
-
-    return res
-      .status(200)
-      .send({ active: active, pending: pending, expired: expired, user: req.u });
+    return res.status(200).send({
+      active: active,
+      pending: pending,
+      expired: expired,
+    });
   } catch (e) {
     console.log(e);
   }
