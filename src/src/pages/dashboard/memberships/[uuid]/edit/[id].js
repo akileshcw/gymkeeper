@@ -27,7 +27,6 @@ const Page = () => {
             `/members/membership/${uuid}/edit_membership/${id}`
           );
           if (res.status === 200) {
-            
             setdata(res.data);
           }
           if (res.status === 401) {
@@ -57,7 +56,7 @@ const Page = () => {
             {data ? (
               <>
                 <InvoicePreview data={data} />
-                <CustomerEditForm uuid={uuid} id={id} />
+                <CustomerEditForm uuid={uuid} id={id} Data={data} />
               </>
             ) : (
               <Box

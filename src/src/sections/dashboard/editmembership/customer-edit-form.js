@@ -36,9 +36,11 @@ const formatDate = (date = 0, m = 0, days = 0) => {
   }
 };
 
-export const CustomerEditForm = ({ uuid, id }) => {
+export const CustomerEditForm = ({ uuid, id, Data }) => {
   const days = [];
   const router = useRouter();
+  const data = Data.membership[0];
+  const mop = ["CASH", "UPI", "CARD", "OTHERS"];
   for (let i = 0; i < 30; i++) {
     days.push(i);
   }
@@ -85,165 +87,131 @@ export const CustomerEditForm = ({ uuid, id }) => {
       }
     },
   });
-
+  const form = [
+    {
+      name: "mon",
+      label: "Month",
+      onchange: (e) => {
+        console.log("name");
+        formik.setFieldValue("mon", e.target.value);
+        formik.setFieldValue(
+          "todate",
+          formatDate(formik.values.fdate, e.target.value, formik.values.days)
+        );
+      },
+      type: "select",
+      option: [1, 2, 3],
+    },
+    {
+      name: "days",
+      label: "Days",
+      onchange: (e) => {
+        formik.setFieldValue("days", e.target.value);
+        formik.setFieldValue(
+          "todate",
+          formatDate(formik.values.fdate, formik.values.mon, e.target.value)
+        );
+      },
+      type: "select",
+      option: days,
+    },
+    {
+      name: "tot_amount",
+      label: "Total Amount",
+      props: {
+        type: "number",
+      },
+    },
+    {
+      name: "amount_paid",
+      label: "Amount Paid",
+      props: {
+        type: "number",
+      },
+    },
+    {
+      name: "balance",
+      label: "Balance",
+      props: {
+        type: "number",
+      },
+    },
+    {
+      name: "fdate",
+      label: "From Date",
+      props: {
+        type: "date",
+        InputLabelProps: {
+          shrink: true,
+        },
+      },
+      onchange: (e) => {
+        formik.setFieldValue("fdate", e.target.value);
+        formik.setFieldValue(
+          "todate",
+          formatDate(e.target.value, formik.values.mon, formik.values.days)
+        );
+      },
+    },
+    {
+      name: "todate",
+      label: "To Date",
+      props: {
+        type: "date",
+        InputLabelProps: {
+          shrink: true,
+        },
+      },
+    },
+    {
+      name: "mop",
+      label: "Method of Payment",
+      type: "select",
+      option: mop,
+    },
+  ];
   return (
     <form onSubmit={formik.handleSubmit}>
       <Card>
         <CardHeader title="Edit Membersip" />
         <CardContent sx={{ pt: 0 }}>
           <Grid container spacing={3}>
-            <Grid xs={12} md={6}>
-              <TextField
-                error={!!(formik.touched.mon && formik.errors.mon)}
-                fullWidth
-                helperText={formik.touched.mon && formik.errors.mon}
-                label="month"
-                name="mon"
-                select
-                onBlur={formik.handleBlur}
-                onChange={(e) => {
-                  formik.setFieldValue("mon", e.target.value);
-                  formik.setFieldValue(
-                    "todate",
-                    formatDate(
-                      formik.values.fdate,
-                      e.target.value,
-                      formik.values.days
-                    )
-                  );
-                }}
-                required
-                value={formik.values.mon}
-              >
-                <MenuItem value="1">1 month</MenuItem>
-                <MenuItem value="2">2 month</MenuItem>
-                <MenuItem value="3">3 month</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                error={!!(formik.touched.days && formik.errors.days)}
-                fullWidth
-                helperText={formik.touched.days && formik.errors.days}
-                label="day"
-                name="days"
-                onBlur={formik.handleBlur}
-                onChange={(e) => {
-                  formik.setFieldValue("days", e.target.value);
-                  formik.setFieldValue(
-                    "todate",
-                    formatDate(
-                      formik.values.fdate,
-                      formik.values.mon,
-                      e.target.value
-                    )
-                  );
-                }}
-                select
-                value={formik.values.days}
-              >
-                {days.map((data, i) => {
-                  return (
-                    <MenuItem key={i} value={data}>
-                      {data}
-                    </MenuItem>
-                  );
-                })}
-              </TextField>
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                error={
-                  !!(formik.touched.tot_amount && formik.errors.tot_amount)
-                }
-                fullWidth
-                helperText={
-                  formik.touched.tot_amount && formik.errors.tot_amount
-                }
-                label="total Amount"
-                name="tot_amount"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.tot_amount}
-              />
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                error={!!(formik.touched.balance && formik.errors.balance)}
-                fullWidth
-                helperText={formik.touched.balance && formik.errors.balance}
-                label="balance"
-                name="balance"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.balance}
-              />
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                InputLabelProps={{ shrink: true }}
-                error={!!(formik.touched.fdate && formik.errors.fdate)}
-                fullWidth
-                helperText={formik.touched.fdate && formik.errors.fdate}
-                label=" from date"
-                name="fdate"
-                onBlur={formik.handleBlur}
-                onChange={(e) => {
-                  console.log(e.target.value);
-                  formik.setFieldValue("fdate", e.target.value);
-                  formik.setFieldValue(
-                    "todate",
-                    formatDate(
-                      e.target.value,
-                      formik.values.mon,
-                      formik.values.days
-                    )
-                  );
-                }}
-                value={formik.values.fdate}
-                type="date"
-              />
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                InputLabelProps={{ shrink: true }}
-                error={!!(formik.touched.todate && formik.errors.todate)}
-                fullWidth
-                helperText={formik.touched.todate && formik.errors.todate}
-                label="to date"
-                name="todate"
-                type="date"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.todate}
-                disabled
-              />
-            </Grid>
-            <Grid xs={12} md={6}>
-              <TextField
-                error={!!(formik.touched.mop && formik.errors.mop)}
-                fullWidth
-                helperText={formik.touched.mop && formik.errors.mop}
-                label="method of payment"
-                name="mop"
-                onBlur={formik.handleBlur}
-                onChange={formik.handleChange}
-                value={formik.values.mop}
-                select
-              >
-                <MenuItem value="">select</MenuItem>
-                {["CASH", "UPI", "CARD", "OTHER"].map((d, i) => {
-                  return (
-                    <MenuItem value={d} key={i}>
-                      {d}
-                    </MenuItem>
-                  );
-                })}
-              </TextField>
-            </Grid>
+            {form.map((d, i) => {
+              return (
+                <Grid lg={6} md={6} sm={12}>
+                  <TextField
+                    fullWidth
+                    label={d.label}
+                    name={d.name}
+                    error={formik.touched[d.name] && formik.errors[d.name]}
+                    helperText={formik.touched[d.name] && formik.errors[d.name]}
+                    onBlur={formik.handleBlur}
+                    onChange={d.onchange ? d.onchange : formik.handleChange}
+                    defaultValue={data[d.name]}
+                    select={d.type === "select" && true}
+                    defaultValue={
+                      formik.values[d.name] === ""
+                        ? formik.setFieldValue(d.name, data[d.name])
+                        : formik.values[d.name]
+                    }
+                    {...d.props}
+                  >
+                    <MenuItem value="">Select</MenuItem>
+                    {d?.option?.map((data, i) => {
+                      return (
+                        <MenuItem key={data} value={data}>
+                          {data}
+                        </MenuItem>
+                      );
+                    })}
+                  </TextField>
+                </Grid>
+              );
+            })}
           </Grid>
           <Stack divider={<Divider />} spacing={3} sx={{ mt: 3 }}></Stack>
         </CardContent>
+        {JSON.stringify(formik.values)}
         <Stack
           direction={{
             xs: "column",
