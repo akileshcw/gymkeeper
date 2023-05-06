@@ -1,4 +1,4 @@
-import PropTypes from "prop-types";
+import PropTypes, { number } from "prop-types";
 import toast from "react-hot-toast";
 import * as Yup from "yup";
 import { useFormik } from "formik";
@@ -15,6 +15,8 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/dist/client/router";
 import Auth from "src/Axios/Auth";
+import ImageUploader from "src/components/ImageUploader";
+import { useState } from "react";
 const formatDate = (date = 0, m = 0, days = 0) => {
   if ((date && m) || (date && days)) {
     var d = new Date(date);
@@ -39,44 +41,61 @@ const formatDate = (date = 0, m = 0, days = 0) => {
 export const CustomerEditForm = ({ uuid, id, Data }) => {
   const days = [];
   const router = useRouter();
-  const data = Data.membership[0];
+  const Datas = Data.membership[0];
   const mop = ["CASH", "UPI", "CARD", "OTHERS"];
   for (let i = 0; i < 30; i++) {
     days.push(i);
   }
+  console.log(Datas);
   const formik = useFormik({
-    initialValues: {
-      mon: "",
-      days: "",
-      tot_amount: 0,
-      amount_paid: 0,
-      balance: 0,
-      fdate: "",
-      todate: "",
-      mop: "",
-    },
+    initialValues: Datas,
     validationSchema: Yup.object({
-      mon: Yup.string().max(255).required("Required"),
+      month: Yup.string().max(255).required("Required"),
       days: Yup.string().max(255).required("Required"),
       tot_amount: Yup.number().required("Required"),
-      amount_paid: Yup.number().required("Required"),
-      balance: Yup.number().required("Required"),
-      fdate: Yup.string().required("Required"),
+      amount_paid: Yup.number()
+        .test(
+          "validate the total amount",
+          "amount should be under the total amount",
+          (value, { parent }) => {
+            return parent.tot_amount > value;
+          }
+        )
+        .required("Required"),
+      balance: Yup.number()
+        .test(
+          "validate the total amount",
+          "amount should be under the total amount",
+          (value, { parent }) => {
+            return parent.tot_amount > value;
+          }
+        )
+        .required("Required"),
+      frmdate: Yup.string().required("Required"),
       todate: Yup.string().required("Required"),
       mop: Yup.string().required("Required"),
     }),
     onSubmit: async (values) => {
-      console.log("nakku");
       try {
         // NOTE: Make API request
+        const formdata = new FormData();
+        formdata.append("file", file);
+        Object.entries(values).map((d) => {
+          formdata.append(d[0], d[1]);
+        });
         const res = await Auth.put(
           `/members/membership/${uuid}/edit_membership/${id}`,
-          values
+          formdata,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
         if (res.status === 200) {
           toast.success("Updated Membership!");
           formik.handleReset();
-          router.push("/dashbord/memberships/");
+          router.push("/dashboard/memberships");
         }
         if (res.status === 401) {
           toast.error("Unauthorized");
@@ -89,14 +108,13 @@ export const CustomerEditForm = ({ uuid, id, Data }) => {
   });
   const form = [
     {
-      name: "mon",
+      name: "month",
       label: "Month",
       onchange: (e) => {
-        console.log("name");
-        formik.setFieldValue("mon", e.target.value);
+        formik.setFieldValue("month", e.target.value);
         formik.setFieldValue(
           "todate",
-          formatDate(formik.values.fdate, e.target.value, formik.values.days)
+          formatDate(formik.values.frmdate, e.target.value, formik.values.days)
         );
       },
       type: "select",
@@ -105,11 +123,12 @@ export const CustomerEditForm = ({ uuid, id, Data }) => {
     {
       name: "days",
       label: "Days",
+
       onchange: (e) => {
         formik.setFieldValue("days", e.target.value);
         formik.setFieldValue(
           "todate",
-          formatDate(formik.values.fdate, formik.values.mon, e.target.value)
+          formatDate(formik.values.frmdate, formik.values.month, e.target.value)
         );
       },
       type: "select",
@@ -120,6 +139,9 @@ export const CustomerEditForm = ({ uuid, id, Data }) => {
       label: "Total Amount",
       props: {
         type: "number",
+        InputLabelProps: {
+          shrink: true,
+        },
       },
     },
     {
@@ -127,6 +149,9 @@ export const CustomerEditForm = ({ uuid, id, Data }) => {
       label: "Amount Paid",
       props: {
         type: "number",
+        InputLabelProps: {
+          shrink: true,
+        },
       },
     },
     {
@@ -134,10 +159,13 @@ export const CustomerEditForm = ({ uuid, id, Data }) => {
       label: "Balance",
       props: {
         type: "number",
+        InputLabelProps: {
+          shrink: true,
+        },
       },
     },
     {
-      name: "fdate",
+      name: "frmdate",
       label: "From Date",
       props: {
         type: "date",
@@ -146,10 +174,10 @@ export const CustomerEditForm = ({ uuid, id, Data }) => {
         },
       },
       onchange: (e) => {
-        formik.setFieldValue("fdate", e.target.value);
+        formik.setFieldValue("frmdate", e.target.value);
         formik.setFieldValue(
           "todate",
-          formatDate(e.target.value, formik.values.mon, formik.values.days)
+          formatDate(e.target.value, formik.values.month, formik.values.days)
         );
       },
     },
@@ -170,34 +198,38 @@ export const CustomerEditForm = ({ uuid, id, Data }) => {
       option: mop,
     },
   ];
+  const [file, setfile] = useState(null);
+  const [url, seturl] = useState("");
   return (
     <form onSubmit={formik.handleSubmit}>
       <Card>
         <CardHeader title="Edit Membersip" />
+        <ImageUploader url={url} setfile={setfile} seturl={seturl} />
         <CardContent sx={{ pt: 0 }}>
           <Grid container spacing={3}>
-            {form.map((d, i) => {
+            {form.map((data, i) => {
               return (
-                <Grid lg={6} md={6} sm={12}>
+                <Grid lg={6} md={6} sm={12} key={i}>
                   <TextField
                     fullWidth
-                    label={d.label}
-                    name={d.name}
-                    error={formik.touched[d.name] && formik.errors[d.name]}
-                    helperText={formik.touched[d.name] && formik.errors[d.name]}
-                    onBlur={formik.handleBlur}
-                    onChange={d.onchange ? d.onchange : formik.handleChange}
-                    defaultValue={data[d.name]}
-                    select={d.type === "select" && true}
-                    defaultValue={
-                      formik.values[d.name] === ""
-                        ? formik.setFieldValue(d.name, data[d.name])
-                        : formik.values[d.name]
+                    label={data.label}
+                    name={data.name}
+                    error={
+                      !!(formik.touched[data.name] && formik.errors[data.name])
                     }
-                    {...d.props}
+                    helperText={
+                      formik.touched[data.name] && formik.errors[data.name]
+                    }
+                    select={data.type === "select" && true}
+                    onBlur={formik.handleBlur}
+                    onChange={
+                      data.onchange ? data.onchange : formik.handleChange
+                    }
+                    value={formik.values[data.name] || ""}
+                    {...data.props}
                   >
                     <MenuItem value="">Select</MenuItem>
-                    {d?.option?.map((data, i) => {
+                    {data?.option?.map((data, i) => {
                       return (
                         <MenuItem key={data} value={data}>
                           {data}

@@ -15,6 +15,8 @@ import {
 } from "@mui/material";
 import Auth from "src/Axios/Auth";
 import { useRouter } from "next/router";
+import ImageUploader from "src/components/ImageUploader";
+import { useState } from "react";
 
 const formatDate = (date = 0, m = 0, days = 0) => {
   if ((date && m) || (date && days)) {
@@ -56,18 +58,45 @@ export const CustomerEditForm = (props) => {
       mon: Yup.string().max(255).required("Required"),
       days: Yup.string().max(255).required("Required"),
       tot_amount: Yup.number().required("Required"),
-      amount_paid: Yup.number().required("Required"),
-      balance: Yup.number().required("Required"),
+      amount_paid: Yup.number()
+        .test(
+          "validate the total amount",
+          "amount should be under the total amount",
+          (value, { parent }) => {
+            return parent.tot_amount > value;
+          }
+        )
+        .required("Required"),
+      balance: Yup.number()
+        .test(
+          "validate the total amount",
+          "amount should be under the total amount",
+          (value, { parent }) => {
+            return parent.tot_amount > value;
+          }
+        )
+        .required("Required"),
       fdate: Yup.string().required("Required"),
       todate: Yup.string().required("Required"),
       mop: Yup.string().required("Required"),
     }),
-    onSubmit: async (values, helpers) => {
+    onSubmit: async (values) => {
       try {
         // NOTE: Make API request
+        const formData = new FormData();
+        formData.append("file", file);
+        Object.entries(values).map((d) => {
+          formData.append(d[0], d[1]);
+        });
+        formData.append("uuid", id);
         const res = await Auth.post(
           `/members/membership/${id}/add_membership`,
-          { ...values, uuid: id }
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
         );
         if (res.status === 200) {
           toast.success("Membership updated");
@@ -82,6 +111,8 @@ export const CustomerEditForm = (props) => {
       }
     },
   });
+  const [file, setfile] = useState(null);
+  const [url, seturl] = useState("");
   const form = [
     {
       name: "mon",
@@ -169,11 +200,12 @@ export const CustomerEditForm = (props) => {
     <form onSubmit={formik.handleSubmit}>
       <Card>
         <CardHeader title={props.title} sx={{ p: 3 }} />
+        <ImageUploader url={url} seturl={seturl} setfile={setfile} />
         <CardContent sx={{ pt: 0 }}>
           <Grid container spacing={3}>
             {form.map((data, i) => {
               return (
-                <Grid xs={12} md={6}>
+                <Grid xs={12} md={6} key={i}>
                   <TextField
                     fullWidth
                     label={data.label}

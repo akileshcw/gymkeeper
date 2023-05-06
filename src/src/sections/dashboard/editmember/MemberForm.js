@@ -12,20 +12,19 @@ import {
   TextField,
   Unstable_Grid2 as Grid,
 } from "@mui/material";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import { Box } from "@mui/system";
 import { useState } from "react";
 import Auth from "src/Axios/Auth";
 import { toast } from "react-hot-toast";
 import Axios from "src/Axios/Axios";
 import { useRouter } from "next/dist/client/router";
+
 const MemberForm = ({ Data }) => {
   const [File, setFile] = useState(null);
   const [url, seturl] = useState();
   const [org, setorg] = useState([]);
   const router = useRouter();
   const Formik = useFormik({
-    initialValues: formdata.initialValues,
+    initialValues: Data,
     validationSchema: formdata.validation,
     onSubmit: async (values) => {
       console.log(values);
@@ -36,7 +35,6 @@ const MemberForm = ({ Data }) => {
         Object.entries(values).map((data, i) => {
           formdata.append(data[0], data[1]);
         });
-        formdata.append("uuid", Data.uuid);
         const res = await Auth.put("/edit_member", formdata, {
           headers: {
             "Content-Type": "multipart/formdata",
@@ -163,7 +161,6 @@ const MemberForm = ({ Data }) => {
           <CardContent sx={{ pt: 0 }}>
             <Grid container spacing={3}>
               {form.map((data, i) => {
-                console.log(Formik.dirty);
                 return (
                   <Grid xs={12} lg={6} key={i}>
                     {data.type === "text" ? (
@@ -184,11 +181,7 @@ const MemberForm = ({ Data }) => {
                         name={data.name}
                         fullWidth
                         {...data.props}
-                        defaultValue={
-                          Formik.values[data.name] === ""
-                            ? Formik.setFieldValue(data.name, Data[data.name])
-                            : Formik.values[data.name]
-                        }
+                        value={Formik.values[data.name]}
                       />
                     ) : (
                       <TextField
@@ -210,11 +203,7 @@ const MemberForm = ({ Data }) => {
                         fullWidth
                         select
                         {...data.props}
-                        value={
-                          (Formik.values[data.name] === ""
-                            ? Formik.setFieldValue(data.name, Data[data.name])
-                            : Formik.values[data.name]) || ""
-                        }
+                        value={Formik.values[data.name] || ""}
                       >
                         <MenuItem value="">Select</MenuItem>
                         {data?.option.map((data, i) => {

@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       this.belongsTo(models.Members, {
         as: "memb",
         foreignKey: "uuid",
-        targetKey: 'uuid',
+        targetKey: "uuid",
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       });

@@ -12,10 +12,23 @@ const {
   getAttendance,
   refresh_token,
 } = require("../../controller/Membership-Controller");
+const multer = require("multer");
+const storage = multer.diskStorage({
+  destination: "../frontend/public/Uploads/",
+  filename: (req, file, cb) => {
+    return cb(null, Date.now() + file.originalname);
+  },
+});
+const upload = multer({ storage: storage });
 
 router.get("/members/membership/:uuid", Auth, getMember);
 
-router.post("/members/membership/:uuid/add_membership", Auth, addMembership);
+router.post(
+  "/members/membership/:uuid/add_membership",
+  upload.single("file"),
+  Auth,
+  addMembership
+);
 
 router.get(
   "/members/membership/:uuid/edit_membership/:id",

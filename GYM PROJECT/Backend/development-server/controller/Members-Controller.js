@@ -8,7 +8,6 @@ var cpy_name = "GymKeeper";
 
 // members registration
 async function add_member(req, res) {
-
   const member = req.body;
   const uuid = uuidv4();
   try {
@@ -38,13 +37,13 @@ async function add_member(req, res) {
       });
 
       client.messages
-          .create({
-              body: `Thank you for enrolling at ${member.organization}. We are delighted to serve you to achieve your fitness goals. You’ll receive the information on membership Details soon. `,
-              from: 'whatsapp:+918531058391',
-              to: `whatsapp:+91${member.phonenumber}`
-          })
-          .then(message => console.log(message.sid))
-          .done();
+        .create({
+          body: `Thank you for enrolling at ${member.organization}. We are delighted to serve you to achieve your fitness goals. You’ll receive the information on membership Details soon. `,
+          from: "whatsapp:+918531058391",
+          to: `whatsapp:+91${member.phonenumber}`,
+        })
+        .then((message) => console.log(message.sid))
+        .done();
       return res.status(200).send({ message: "Successfull" });
     }
   } catch (e) {
@@ -87,35 +86,33 @@ async function edit_member(req, res) {
   let u = req.u;
   const u_mem = req.body;
   try {
-    
-      const ph = await Members.findOne({
-        where: {
-          phonenumber: u_mem.phonenumber,
-          uuid: { [Op.ne]: u_mem.uuid },
-        },
-        raw: true,
-      });
+    const ph = await Members.findOne({
+      where: {
+        phonenumber: u_mem.phonenumber,
+        uuid: { [Op.ne]: u_mem.uuid },
+      },
+      raw: true,
+    });
 
-      if (ph) {
-        return res.status(208).send({ message: "Phone Number Already Exists" });
-      } else {
-        const edit = await Members.update(
-          {
-            name: u_mem.name,
-            dob: new Date(u_mem.dob),
-            bloodgroup: u_mem.bloodgroup,
-            phonenumber: u_mem.phonenumber,
-            gender: u_mem.gender,
-            org_name: u[0]["org_name"],
-            profession: u_mem.profession,
-            image: req.file ? req.file.filename : null,
-            updatedAt: new Date(),
-          },
-          { where: { uuid: u_mem.uuid } }
-        );
-        return res.status(200).send({ message: "Succesfully Updated" });
-      }
-    
+    if (ph) {
+      return res.status(208).send({ message: "Phone Number Already Exists" });
+    } else {
+      const edit = await Members.update(
+        {
+          name: u_mem.name,
+          dob: new Date(u_mem.dob),
+          bloodgroup: u_mem.bloodgroup,
+          phonenumber: u_mem.phonenumber,
+          gender: u_mem.gender,
+          org_name: u[0]["org_name"],
+          profession: u_mem.profession,
+          image: req.file ? req.file.filename : null,
+          updatedAt: new Date(),
+        },
+        { where: { uuid: u_mem.uuid } }
+      );
+      return res.status(200).send({ message: "Succesfully Updated" });
+    }
   } catch (e) {
     console.log(e);
   }

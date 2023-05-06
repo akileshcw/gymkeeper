@@ -206,9 +206,9 @@ async function editMembership(req, res) {
 
     const mshp = await Membership.update(
       {
-        month: mbshp.mon,
+        month: mbshp.month,
         days: mbshp.days,
-        frmdate: mbshp.fdate,
+        frmdate: mbshp.frmdate,
         todate: mbshp.todate,
         tot_amount: mbshp.tot_amount,
         amount_paid: mbshp.amount_paid,

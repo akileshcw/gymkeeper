@@ -8,9 +8,8 @@ import {
   MenuItem,
   Unstable_Grid2 as Grid,
 } from "@mui/material";
-import { Formik, useFormik } from "formik";
-import { useEffect, useRef } from "react";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+import { useFormik } from "formik";
+import { useEffect } from "react";
 import { useState } from "react";
 import * as Yup from "yup";
 import { toast } from "react-hot-toast";
@@ -20,7 +19,6 @@ export const Form7 = () => {
   const formik = useFormik({
     initialValues: {
       name: "",
-
       profession: "",
       bloodgroup: "",
       organization: "",
@@ -30,12 +28,11 @@ export const Form7 = () => {
     },
     validationSchema: Yup.object({
       name: Yup.string().required("required"),
-
       profession: Yup.string().required("required"),
       bloodgroup: Yup.string().required("required"),
       organization: Yup.string().required("required"),
       dob: Yup.string().required("required"),
-      phonenumber: Yup.string()
+      phonenumber: Yup.number()
         .max(10, "Phone Number is 10-digit")
         .min(10, "Phone Number is 10-digit")
         .required("required"),
@@ -47,7 +44,6 @@ export const Form7 = () => {
         Object.entries(values).map((data, i) => {
           formdata.append(data[0], data[1]);
         });
-        // console.log(formdata.values());
 
         const res = await axios.post(
           "http://localhost:5000/add_member",
@@ -78,16 +74,6 @@ export const Form7 = () => {
   const [file, setFile] = useState();
   const [url, seturl] = useState("");
   const [org, setorg] = useState([]);
-  function handleFile(e) {
-    try {
-      setFile(e.target.files[0]);
-      seturl(URL.createObjectURL(e.currentTarget.files[0]));
-    } catch (error) {
-      setFile((prev) => prev);
-      seturl((prev) => prev);
-    }
-  }
-
   useEffect(() => {
     const fetcher = async () => {
       try {
@@ -145,30 +131,7 @@ export const Form7 = () => {
         <Card>
           <CardHeader title={"Register"} sx={{ p: 3 }} />
           <CardContent sx={{ pt: 0 }}>
-            {/* <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
-            py: 6,
-          }}
-        >
-          <label htmlFor="image">
-            <Avatar src={url} alt="" sx={{ width: 100, height: 100 }}>
-              <PersonAddAlt1Icon />
-            </Avatar>
-          </label>
-
-          <input
-            id="image"
-            type="file"
-            onChange={handleFile}
-            name="image"
-            accept="image/*"
-            hidden
-          />
-        </Box> */}
+            {/* */}
             <Grid container spacing={3}>
               {form.map((data, i) => {
                 return (

@@ -6,12 +6,12 @@ import { Seo } from "src/components/seo";
 import { Layout as DashboardLayout } from "src/layouts/dashboard";
 
 import { CustomerEditForm } from "src/sections/dashboard/editmembership/customer-edit-form";
-import ReactLoading from "react-loading";
-import { InvoicePreview } from "src/sections/dashboard/invoice/invoice-preview";
+
 import { useRouter } from "next/router";
 
 import { toast } from "react-hot-toast";
 import Auth from "src/Axios/Auth";
+import Loading from "src/components/Loading";
 
 const Page = () => {
   const router = useRouter();
@@ -55,25 +55,10 @@ const Page = () => {
           <Stack spacing={4}>
             {data ? (
               <>
-                <InvoicePreview data={data} />
                 <CustomerEditForm uuid={uuid} id={id} Data={data} />
               </>
             ) : (
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <ReactLoading
-                  type="bars"
-                  color={"black"}
-                  height={"20%"}
-                  width={"20%"}
-                />
-              </Box>
+              <Loading />
             )}
           </Stack>
         </Container>
